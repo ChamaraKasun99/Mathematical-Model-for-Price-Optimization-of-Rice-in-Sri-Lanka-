@@ -1,0 +1,165 @@
+---
+title: "New"
+author: "(SC/2020/11790) Chamara Kasun"
+date: "2024-02-28"
+output: html_document
+---
+
+```{r}
+dataset=read.csv("Data_set2.csv")
+dataset
+```
+#Time series Analysing
+
+```{r}
+df=data.frame(dataset$price)
+df
+```
+```{r}
+timed_price=ts(df,frequency = 12,start = c(2000,1))
+timed_price
+```
+```{r}
+str(timed_price)
+class(timed_price)
+```
+```{r}
+plot.ts(timed_price)
+```
+
+```{r}
+decompose(timed_price,type = "multiplicative")
+plot(decompose(timed_price,type = "multiplicative"))
+```
+
+```{r}
+#smoothing
+#simple exponential Smoothing
+library(forecast)
+smt1=ses(timed_price)
+plot(smt1)
+smt1
+```
+
+```{r}
+#double exponential Smoothing
+smt2=holt(timed_price)
+plot(smt2)
+smt2
+```
+```{r}
+#Triple exponential Smoothing
+smt2=HoltWinters(timed_price)
+plot(smt2)
+smt2
+```
+
+This controls the level smoothing. A value close to 1 indicates that the forecast is heavily influenced by recent observations. In this case, with α = 0.9345142, it suggests that the model heavily relies on recent data points for the level component.
+
+This controls the trend smoothing. A value close to 1 implies that the trend component is heavily influenced by recent trend changes. With β = 0.3915806, the trend component is less sensitive to recent changes compared to the level component, but still somewhat responsive.
+
+This controls the seasonality smoothing. A value close to 1 indicates that the seasonal component is fully adjusted based on recent seasonal variations. With γ = 1, it suggests that the seasonal component is fully adaptive to recent seasonal changes.
+
+# Stationity
+```{r}
+library(tseries)
+adf.test(timed_price)
+plot.ts(timed_price)
+```
+Not Stationary
+
+```{r}
+stt1=log(timed_price)
+adf.test(stt1)
+plot.ts(stt1)
+```
+Not Stationary
+
+```{r}
+stt2=diff(log(timed_price))
+adf.test(stt2)
+kpss.test(stt2)
+plot(stt2)
+```
+
+```{r}
+acf(stt2,pl=FALSE)
+acf(stt2)
+```
+```{r}
+pacf(stt2)
+```
+
+p=0,1
+q=2
+d=2
+
+%ARIMA MODEL
+```{r}
+#Model_1
+fit1=arima(log(timed_price),c(0,2,2),seasonal = list(order=c(0,2,2),period=12))
+summary(fit1)
+```
+```{r}
+#Model_2
+fit2=arima(log(timed_price),c(1,2,2),seasonal = list(order=c(1,2,2),period=12))
+summary(fit2)
+```
+# model 2 is the best one.
+
+# Calculate the residual values
+```{r}
+# Fit ARIMA model
+best_arima_model <- arima(log(timed_price), order=c(1, 2, 2))
+# Get residuals
+residuals <- residuals(best_arima_model)
+# Print or use the residuals as needed
+print(residuals)
+```
+
+```{r}
+# Select Predictor Variables
+# Load necessary libraries
+library(dplyr)
+library(corrplot)
+
+# Explore the structure and summary statistics of your dataset
+str(dataset)
+summary(dataset)
+
+# Perform exploratory data analysis to identify potential predictor variables
+# You can use various techniques such as scatter plots, histograms, boxplots, etc.
+
+# Calculate correlation matrix to identify variables correlated with the target variable
+# Remove percentage sign and convert to numeric
+tax = as.numeric(gsub("%", "", dataset$Tax.rate))
+# Print the result
+print(tax)
+
+# Remove commas and convert to numeric
+Production_Cost = as.numeric(gsub(",", "", dataset$Poduction.Cost..Rs.Hr.))
+# Print the numeric list
+print(Production_Cost)
+
+data=data.frame(dataset$price,dataset$production,dataset$exchange_rate,dataset$fuel_price,Production_Cost,tax)
+data
+correlation_matrix <- cor(data)
+correlation_matrix
+
+# Visualize the correlation matrix using a heatmap
+corrplot(correlation_matrix, method = "color")
+
+```
+
+```{r}
+regression_data <- data.frame(residuals,dataset$price,dataset$production,dataset$production,dataset$exchange_rate,dataset$fuel_price,Production_Cost,tax)
+regression_data
+```
+```{r}
+# Split data into training and testing sets
+regression=lm(regression_data$dataset.price~regression_data$residuals+regression_data$dataset.production+regression_data$dataset.exchange_rate+regression_data$dataset.fuel_price+regression_data$Production_Cost+regression_data$tax,data = regression_data)
+summary(regression)
+```
+
+
+

@@ -1,0 +1,67 @@
+---
+title: "final"
+author: "(SC/2020/11790) Chamara Kasun"
+date: "2024-02-28"
+output: html_document
+---
+
+```{r}
+dataset=read.csv("clean_rice_data.csv")
+dataset
+```
+```{r}
+#Time series Analysing
+df=data.frame(dataset$rice_price)
+df
+```
+```{r}
+timed_price=ts(df,frequency = 12,start = c(2000,1))
+timed_price
+```
+```{r}
+str(timed_price)
+class(timed_price)
+```
+
+```{r}
+plot.ts(timed_price)
+```
+```{r}
+decompose(timed_price,type = "multiplicative")
+plot(decompose(timed_price,type = "multiplicative"))
+```
+```{r}
+#smoothing
+#simple exponential Smoothing
+library(forecast)
+smt1=ses(timed_price)
+plot(smt1)
+smt1
+```
+```{r}
+#double exponential Smoothing
+smt2=holt(timed_price)
+plot(smt2)
+smt2
+```
+
+```{r}
+#Triple exponential Smoothing
+smt2=HoltWinters(timed_price)
+plot(smt2)
+smt2
+```
+```{r}
+library(tseries)
+adf.test(timed_price)
+plot.ts(timed_price)
+```
+
+```{r}
+acf(timed_price,pl=FALSE)
+acf(timed_price)
+```
+```{r}
+pacf(timed_price)
+```
+
